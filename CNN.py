@@ -12,9 +12,10 @@ from keras import Model
 from keras.utils import plot_model
 from keras.models import Model
 from keras import Sequential
-from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
+from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout
 from keras.layers import Input
 from keras.callbacks import EarlyStopping
+from tensorflow.keras.activations import swish
 
 caminho_pasta = os.getcwd()
 dados = pd.read_csv(caminho_pasta + "/BaseCidade2019.csv", sep=";")
@@ -61,6 +62,34 @@ X_test_reshaped = X_test.values.reshape((X_test.shape[0], X_test.shape[1], 1))
 
 model = Sequential()
 
+# model.add(Input(shape=(X_train_reshaped.shape[1], 1)))
+# model.add(Conv1D(filters=32, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=32, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=64, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=64, kernel_size=4, padding='same', activation='relu'))
+# model.add(Dropout(0.10)) 
+# model.add(Conv1D(filters=128, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=128, kernel_size=4, padding='same', activation='relu'))
+# model.add(MaxPooling1D(pool_size=2))
+# model.add(Conv1D(filters=256, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=256, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=528, kernel_size=4, padding='same', activation='relu'))
+# model.add(Conv1D(filters=528, kernel_size=4, padding='same', activation='relu'))
+# model.add(MaxPooling1D(pool_size=2))
+# # Achatar os dados para conectá-los à camada densa
+# model.add(Flatten())
+# model.add(Dense(units=528, activation='relu'))
+# model.add(Dense(units=256, activation='relu'))
+# model.add(Dense(units=64, activation='relu'))
+# model.add(Dense(units=32, activation='relu'))
+# model.add(Dense(units=32, activation='relu'))
+# model.add(Dense(units=16, activation='relu'))
+# model.add(Dense(units=16, activation='relu'))
+# model.add(Dense(units=8, activation='relu'))
+# model.add(Dense(units=4, activation='relu'))
+# model.add(Dense(units=1))  # Camada de saída para regressão
+
+
 model.add(Input(shape=(X_train_reshaped.shape[1], 1)))
 model.add(Conv1D(filters=32, kernel_size=4, padding='same', activation='relu'))
 model.add(Conv1D(filters=32, kernel_size=4, padding='same', activation='relu'))
@@ -72,20 +101,20 @@ model.add(MaxPooling1D(pool_size=2))
 model.add(Conv1D(filters=256, kernel_size=4, padding='same', activation='relu'))
 model.add(Conv1D(filters=256, kernel_size=4, padding='same', activation='relu'))
 model.add(Conv1D(filters=528, kernel_size=4, padding='same', activation='relu'))
-model.add(Conv1D(filters=528, kernel_size=4, padding='same', activation='relu'))
 model.add(MaxPooling1D(pool_size=2))
 # Achatar os dados para conectá-los à camada densa
 model.add(Flatten())
-model.add(Dense(units=528, activation='relu'))
-model.add(Dense(units=256, activation='relu'))
-model.add(Dense(units=64, activation='relu'))
-model.add(Dense(units=32, activation='relu'))
-model.add(Dense(units=32, activation='relu'))
-model.add(Dense(units=16, activation='relu'))
-model.add(Dense(units=16, activation='relu'))
-model.add(Dense(units=8, activation='relu'))
-model.add(Dense(units=4, activation='relu'))
+model.add(Dense(units=528, activation='swish'))
+model.add(Dense(units=256, activation='swish'))
+model.add(Dense(units=64, activation='swish'))
+model.add(Dense(units=32, activation='swish'))
+model.add(Dense(units=32, activation='swish'))
+model.add(Dense(units=16, activation='swish'))
+model.add(Dense(units=16, activation='swish'))
+model.add(Dense(units=8, activation='swish'))
+model.add(Dense(units=4, activation='swish'))
 model.add(Dense(units=1))  # Camada de saída para regressão
+
 
 # Compilação do modelo
 model.compile(optimizer='adam', loss='mse')  # Utilizando o erro quadrático médio como função de perda
@@ -95,7 +124,7 @@ qntEpochs = 50
 
 # Gerando e salvando a visualização do modelo
 epoch_range = range(1, qntEpochs + 1)
-tipo = "CNN-Maior2-" + str(qntEpochs) +"Batch25"
+tipo = "CNN-Relu-Swish-Maior-" + str(qntEpochs) +"Batch25"
 nomeArquivo='Estruturas/Estrutura'+tipo+'.txt'
 with open(nomeArquivo, 'w') as f:
     model.summary(print_fn=lambda x: f.write(x + '\n'))
@@ -108,7 +137,8 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_wei
 history = model.fit(X_train_reshaped, y_train, epochs=qntEpochs,
                     batch_size=25,
                     validation_data=(X_test_reshaped, y_test),
-                    callbacks=[early_stopping])
+                    # callbacks=[early_stopping]
+                    )
 
 # Plot da loss ao decorrer das épocas
 plt.figure(figsize=(4.5, 3))
